@@ -17,10 +17,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
+@Suppress("PrivatePropertyName")
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private val SARAJEVO_LATLNG = LatLng(43.8563, 18.4131)
+    private val SARAJEVO_LAT_LNG = LatLng(43.8563, 18.4131)
     private val CURRENT_LOCATION_REQUEST_ID = 220495
+    private val DEFAULT_MAP_ZOOM = 15f
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
@@ -35,7 +37,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
     /**
@@ -53,6 +55,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         retrieveLocationPermission()
         setInitialLocation()
         updateMapWithCurrentLocation()
+
+        updateMapWithNonSmokingPlaces()
+    }
+
+    private fun updateMapWithNonSmokingPlaces() {
+                
     }
 
     @SuppressLint("MissingPermission")
@@ -65,11 +73,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setInitialLocation() {
-        updateMap(SARAJEVO_LATLNG)
+        updateMap(SARAJEVO_LAT_LNG)
     }
 
     private fun updateMap(location: LatLng) {
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, DEFAULT_MAP_ZOOM))
         mMap.addMarker(MarkerOptions().position(location))
     }
 
