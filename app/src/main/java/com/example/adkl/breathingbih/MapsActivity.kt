@@ -7,25 +7,37 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.util.Log
+import com.example.adkl.breathingbih.service.NonSmokingPlacesService
+import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.places.GeoDataClient
+import com.google.android.gms.location.places.Place
+import com.google.android.gms.location.places.Places
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment
+import com.google.android.gms.location.places.ui.PlaceSelectionListener
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PointOfInterest
 
 @Suppress("PrivatePropertyName")
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPoiClickListener {
 
     private val SARAJEVO_LAT_LNG = LatLng(43.8563, 18.4131)
     private val CURRENT_LOCATION_REQUEST_ID = 220495
     private val DEFAULT_MAP_ZOOM = 15f
+    private val DETAILS_MAP_ZOOM = 18f
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var mGeoDataClient: GeoDataClient
     private var mLocationPermissionGranted: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,19 +50,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        mGeoDataClient = Places.getGeoDataClient(this)
+
+        initializeViews()
+
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+    private fun initializeViews() {
+        val autocompleteFragment = fragmentManager.findFragmentById(R.id.place_autocomplete_fragment) as PlaceAutocompleteFragment
+
+        autocompleteFragment.setOnPlaceSelectedListener(
+                object: PlaceSelectionListener {
+                    override fun onPlaceSelected(place: Place?) {
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place!!.latLng, DETAILS_MAP_ZOOM))
+                    }
+
+                    override fun onError(p0: Status?) {
+                        Log.e("AutoCompleteFragment", p0.toString())
+                    }
+                }
+        )
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.setOnPoiClickListener(this)
 
         retrieveLocationPermission()
         setInitialLocation()
@@ -59,8 +83,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         updateMapWithNonSmokingPlaces()
     }
 
+    override fun onPoiClick(poi: PointOfInterest?) {
+        Log.i("POI_CLICK", poi!!.name + " - " + poi.latLng.latitude + " | " + poi.latLng.longitude)
+    }
+
     private fun updateMapWithNonSmokingPlaces() {
-                
+        NonSmokingPlacesService.getNonSmokingPlaces().forEach {
+            showNonSmokingArea(LatLng(it.lat, it.lng))
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -78,7 +108,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun updateMap(location: LatLng) {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, DEFAULT_MAP_ZOOM))
-        mMap.addMarker(MarkerOptions().position(location))
+    }
+
+    private fun showNonSmokingArea(location: LatLng) {
+
+        val icon = BitmapDescriptorFactory.defaultMarker() // TODO Add a custom icon
+        mMap.addMarker(MarkerOptions().position(location).icon(icon))
     }
 
     private fun retrieveLocationPermission() {
