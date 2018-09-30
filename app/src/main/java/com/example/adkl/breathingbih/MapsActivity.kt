@@ -62,7 +62,7 @@ class MapsActivity : AppCompatActivity(),
         val autocompleteFragment = fragmentManager.findFragmentById(R.id.place_autocomplete_fragment) as PlaceAutocompleteFragment
 
         autocompleteFragment.setOnPlaceSelectedListener(
-                object: PlaceSelectionListener {
+                object : PlaceSelectionListener {
                     override fun onPlaceSelected(place: Place?) {
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place!!.latLng, DETAILS_MAP_ZOOM))
                     }
@@ -128,12 +128,11 @@ class MapsActivity : AppCompatActivity(),
     }
 
     private fun retrieveLocationPermission() {
-        if ( ContextCompat.checkSelfPermission(
+        if (ContextCompat.checkSelfPermission(
                         applicationContext,
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ) {
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true
-        }
-        else {
+        } else {
             ActivityCompat.requestPermissions(
                     this,
                     Array(1) { Manifest.permission.ACCESS_FINE_LOCATION },
