@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.widget.Toast
+import com.example.adkl.breathingbih.model.BBIHPlace
 import com.example.adkl.breathingbih.service.NonSmokingPlacesService
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -22,13 +24,13 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PointOfInterest
+import com.google.android.gms.maps.model.*
 
 @Suppress("PrivatePropertyName")
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPoiClickListener {
+class MapsActivity : AppCompatActivity(),
+        OnMapReadyCallback,
+        GoogleMap.OnPoiClickListener,
+        GoogleMap.OnMarkerClickListener {
 
     private val SARAJEVO_LAT_LNG = LatLng(43.8563, 18.4131)
     private val CURRENT_LOCATION_REQUEST_ID = 220495
@@ -75,6 +77,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPoiCli
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.setOnPoiClickListener(this)
+        mMap.setOnMarkerClickListener(this)
 
         retrieveLocationPermission()
         setInitialLocation()
@@ -83,13 +86,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPoiCli
         updateMapWithNonSmokingPlaces()
     }
 
-    override fun onPoiClick(poi: PointOfInterest?) {
-        Log.i("POI_CLICK", poi!!.name + " - " + poi.latLng.latitude + " | " + poi.latLng.longitude)
+    override fun onMarkerClick(marker: Marker?): Boolean {
+        val place: BBIHPlace = marker!!.tag as BBIHPlace
+        Toast.makeText(applicationContext, place.typeString(), Toast.LENGTH_LONG).show()
+
+        return false
     }
 
     private fun updateMapWithNonSmokingPlaces() {
         NonSmokingPlacesService.getNonSmokingPlaces().forEach {
-            showNonSmokingArea(LatLng(it.lat, it.lng))
+            showNonSmokingArea(it)
         }
     }
 
@@ -110,10 +116,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPoiCli
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, DEFAULT_MAP_ZOOM))
     }
 
-    private fun showNonSmokingArea(location: LatLng) {
+    private fun showNonSmokingArea(place: BBIHPlace) {
+        val location = LatLng(place.lat, place.lng)
 
         val icon = BitmapDescriptorFactory.defaultMarker() // TODO Add a custom icon
-        mMap.addMarker(MarkerOptions().position(location).icon(icon))
+        mMap.addMarker(MarkerOptions()
+                .position(location)
+                .icon(icon)
+                .title(place.name)
+        ).tag = place
     }
 
     private fun retrieveLocationPermission() {
@@ -136,5 +147,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPoiCli
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true
         }
+    }
+
+    override fun onPoiClick(poi: PointOfInterest?) {
+        Log.i("POI_CLICK", poi!!.name + " - " + poi.latLng.latitude + " | " + poi.latLng.longitude)
     }
 }

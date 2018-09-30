@@ -1,16 +1,18 @@
 package com.example.adkl.breathingbih.model
 
-class BBIHPlace {
-    var placeId: Long? = 0
-    var verifications: Int? = 0
-    var lat: Double = 0.0
-    var lng: Double = 0.0
+class BBIHPlace(
+        var placeId: Long,
+        var lat: Double,
+        var lng: Double,
+        var name: String,
+        var description: String?,
+        var type: BBIHPlaceType) {
 
-    constructor(placeId: Long? = null, verifications: Int? = null, lat: Double, lng: Double) {
-        this.placeId = placeId
-        this.verifications = verifications
-        this.lat = lat
-        this.lng = lng
+    fun typeString(): String {
+        return when(type) {
+            BBIHPlaceType.NO_SMOKE_ZONE -> "No Smoke Zone"
+            BBIHPlaceType.NO_SMOKE -> "No Smoke"
+        }
     }
 
 }
