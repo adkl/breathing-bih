@@ -4,11 +4,13 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
+import android.opengl.Visibility
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.example.adkl.breathingbih.model.BBIHPlace
 import com.example.adkl.breathingbih.service.NonSmokingPlacesService
@@ -28,12 +30,15 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Tasks.await
+import kotlinx.android.synthetic.main.activity_maps.*
 
 @Suppress("PrivatePropertyName")
 class MapsActivity : AppCompatActivity(),
         OnMapReadyCallback,
+        GoogleMap.OnMapClickListener,
         GoogleMap.OnPoiClickListener,
         GoogleMap.OnMarkerClickListener {
+
 
     private val SARAJEVO_LAT_LNG = LatLng(43.8563, 18.4131)
     private val CURRENT_LOCATION_REQUEST_ID = 220495
@@ -81,21 +86,33 @@ class MapsActivity : AppCompatActivity(),
         mMap = googleMap
         mMap.setOnPoiClickListener(this)
         mMap.setOnMarkerClickListener(this)
+        mMap.setOnMapClickListener(this)
 
         retrieveLocationPermission()
         setInitialLocation()
+        updateMapWithCurrentLocation() // At least try :D
 
         updateMapWithNonSmokingPlaces()
-
-        updateMapWithCurrentLocation()
-
     }
 
     override fun onMarkerClick(marker: Marker?): Boolean {
         val place: BBIHPlace = marker!!.tag as BBIHPlace
-        Toast.makeText(applicationContext, place.typeString(), Toast.LENGTH_LONG).show()
 
+        clearPlaceDetails()
+        fillPlaceDetails(place)
+
+        place_details_cardview!!.visibility = View.VISIBLE
         return false
+    }
+
+    private fun fillPlaceDetails(place: BBIHPlace) {
+        non_smoking_place_title_tv.text = place.name
+        non_smoking_place_description_tv.text = place.typeString()
+    }
+
+    private fun clearPlaceDetails() {
+        non_smoking_place_title_tv.text = ""
+        non_smoking_place_description_tv.text = ""
     }
 
     private fun updateMapWithNonSmokingPlaces() {
@@ -155,5 +172,10 @@ class MapsActivity : AppCompatActivity(),
 
     override fun onPoiClick(poi: PointOfInterest?) {
         Log.i("POI_CLICK", poi!!.name + " - " + poi.latLng.latitude + " | " + poi.latLng.longitude)
+    }
+
+
+    override fun onMapClick(latLng: LatLng?) {
+        place_details_cardview!!.visibility = View.INVISIBLE
     }
 }
