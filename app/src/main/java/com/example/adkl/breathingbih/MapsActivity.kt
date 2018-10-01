@@ -3,6 +3,7 @@ package com.example.adkl.breathingbih
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Location
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -25,6 +26,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Tasks.await
 
 @Suppress("PrivatePropertyName")
 class MapsActivity : AppCompatActivity(),
@@ -81,9 +84,11 @@ class MapsActivity : AppCompatActivity(),
 
         retrieveLocationPermission()
         setInitialLocation()
-        updateMapWithCurrentLocation()
 
         updateMapWithNonSmokingPlaces()
+
+        updateMapWithCurrentLocation()
+
     }
 
     override fun onMarkerClick(marker: Marker?): Boolean {
@@ -102,8 +107,8 @@ class MapsActivity : AppCompatActivity(),
     @SuppressLint("MissingPermission")
     private fun updateMapWithCurrentLocation() {
         if (mLocationPermissionGranted) {
-            mFusedLocationProviderClient.lastLocation.addOnCompleteListener {
-                updateMap(LatLng(it.result.longitude, it.result.latitude))
+            mFusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                updateMap(LatLng(it.longitude, it.latitude))
             }
         }
     }
