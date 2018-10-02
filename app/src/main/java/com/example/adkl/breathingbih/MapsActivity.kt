@@ -7,6 +7,7 @@ import android.location.Location
 import android.opengl.Visibility
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
@@ -15,8 +16,7 @@ import android.widget.Toast
 import com.example.adkl.breathingbih.model.BBIHPlace
 import com.example.adkl.breathingbih.service.NonSmokingPlacesService
 import com.google.android.gms.common.api.Status
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.location.places.GeoDataClient
 import com.google.android.gms.location.places.Place
 import com.google.android.gms.location.places.Places
@@ -39,9 +39,8 @@ class MapsActivity : AppCompatActivity(),
         GoogleMap.OnPoiClickListener,
         GoogleMap.OnMarkerClickListener {
 
-
     private val SARAJEVO_LAT_LNG = LatLng(43.8563, 18.4131)
-    private val CURRENT_LOCATION_REQUEST_ID = 220495
+    private val CURRENT_LOCATION_REQUEST_ID = 1
     private val DEFAULT_MAP_ZOOM = 15f
     private val DETAILS_MAP_ZOOM = 18f
 
@@ -49,6 +48,14 @@ class MapsActivity : AppCompatActivity(),
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var mGeoDataClient: GeoDataClient
     private var mLocationPermissionGranted: Boolean = false
+
+    private val mLocationCallback: LocationCallback = object: LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult?) {
+            val it = locationResult!!.lastLocation
+            updateMap(LatLng(it.latitude, it.longitude))
+            mFusedLocationProviderClient.removeLocationUpdates(this)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +70,6 @@ class MapsActivity : AppCompatActivity(),
         mGeoDataClient = Places.getGeoDataClient(this)
 
         initializeViews()
-
     }
 
     private fun initializeViews() {
@@ -124,9 +130,14 @@ class MapsActivity : AppCompatActivity(),
     @SuppressLint("MissingPermission")
     private fun updateMapWithCurrentLocation() {
         if (mLocationPermissionGranted) {
-            mFusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                updateMap(LatLng(it.longitude, it.latitude))
-            }
+            mFusedLocationProviderClient.requestLocationUpdates(
+                    LocationRequest()
+                            .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
+                            .setInterval(10 * 1000)
+                            .setFastestInterval(1 * 1000),
+                    mLocationCallback,
+                    null
+            )
         }
     }
 
