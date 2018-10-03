@@ -2,6 +2,7 @@ package com.example.adkl.breathingbih
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.location.Location
 import android.opengl.Visibility
@@ -10,6 +11,8 @@ import android.os.Bundle
 import android.os.Looper
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.widget.PopupMenuCompat
+import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -133,7 +136,7 @@ class MapsActivity : AppCompatActivity(),
             mFusedLocationProviderClient.requestLocationUpdates(
                     LocationRequest()
                             .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
-                            .setInterval(10 * 1000)
+                            .setInterval(1 * 1000)
                             .setFastestInterval(1 * 1000),
                     mLocationCallback,
                     null
@@ -182,7 +185,17 @@ class MapsActivity : AppCompatActivity(),
     }
 
     override fun onPoiClick(poi: PointOfInterest?) {
-        Log.i("POI_CLICK", poi!!.name + " - " + poi.latLng.latitude + " | " + poi.latLng.longitude)
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Novi objekat u kojem se ne pusi?")
+        builder.setView(R.layout.report_new_place)
+
+        builder.setPositiveButton("Prihvati") { _, _ ->
+            // Login from Google
+            NonSmokingPlacesService.reportNewNonSmokingPlace(poi!!)
+        }
+        builder.setNegativeButton("Poništi") { _, _ -> }
+
+        builder.create().show()
     }
 
 

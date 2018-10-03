@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RadioGroup
+        android:id="@+id/place_type_radio_group"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp">
+
+        <RadioButton
+            android:id="@+id/place_type_no_smoke"
+            android:checked="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Potpuno nepusacki objekat"/>
+
+        <RadioButton
+            android:id="@+id/place_type_no_smoke_zone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pusacki i nepusacki dio objekta odvojeni"/>
+
+    </RadioGroup>
+
+</LinearLayout>

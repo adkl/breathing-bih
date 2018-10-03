@@ -2,6 +2,7 @@ package com.example.adkl.breathingbih.service
 
 import com.example.adkl.breathingbih.model.BBIHPlace
 import com.example.adkl.breathingbih.model.BBIHPlaceType
+import com.google.android.gms.maps.model.PointOfInterest
 
 class NonSmokingPlacesService {
     companion object {
@@ -27,6 +28,10 @@ class NonSmokingPlacesService {
                             placeId = 3,
                             type = BBIHPlaceType.NO_SMOKE_ZONE,
                             description = null))
+        }
+
+        fun reportNewNonSmokingPlace(place: PointOfInterest): Boolean {
+            return true
         }
     }
 }
